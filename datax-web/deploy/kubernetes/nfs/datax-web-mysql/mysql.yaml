@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: common-datax-web-mysql
+spec:
+  selector:
+    matchLabels:
+      app: datax-web-mysql
+  template:
+    metadata:
+      labels:
+        app: datax-web-mysql
+    spec:
+      containers:
+        - name: mysql
+          #image: hub.kaolayouran.cn:5000/base/datax-web-mysql:v8.0.35
+          image: hub.kaolayouran.cn:5000/base/datax-web-mysql:v8.0.39
+          imagePullPolicy: IfNotPresent
+          args:
+            - --default-time-zone=+8:00
+            - --default-authentication-plugin=mysql_native_password
+            - --sql-mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
+            - --max-connections=10240
+            - --log_error_verbosity=3
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: 'Datax.Web.com'
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          livenessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          readinessProbe:
+            failureThreshold: 3
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            tcpSocket:
+              port: 3306
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "0.1"
+              memory: "256Mi"
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+              subPath: data
+            #- name: mysql-configmap
+            #  mountPath: /etc/mysql/my.cnf
+            #  subPath: my.cnf
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: datax-web-mysql-pv-claim
+        #- name: mysql-configmap
+        #  configMap:
+        #    name: mysql-cm
+

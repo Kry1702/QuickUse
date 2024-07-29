@@ -1,0 +1,15 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: common-datax-web-admin
+spec:
+  ports:
+    - name: web
+      nodePort: 50808
+      port: 8080
+      protocol: TCP
+      targetPort: admin
+  selector:
+    app: common-datax-web-admin
+  type: NodePort

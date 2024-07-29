@@ -1,0 +1,43 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: common-datax-web-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: common-datax-web-admin
+  template:
+    metadata:
+      labels:
+        app: common-datax-web-admin
+    spec:
+      nodeName: m01 
+      restartPolicy: Always
+      containers:
+        - name: admin
+          image: registry.cn-chengdu.aliyuncs.com/ssvip/base:datax-web_2.1.2-v2
+          imagePullPolicy: IfNotPresent
+          command: ["java"]
+          args: ["-jar", "datax-admin-2.1.2.jar", "--PORT=8080", "--MYSQL_SERVICE_HOST=common-datax-web-mysql", "--MYSQL_SERVICE_PORT=3306", "--MYSQL_USER=root", "--MYSQL_PASSWORD=Datax.Web.com", "--DB_DATABASE=datax_web" ]
+          #env:
+          ports:
+            - name: admin
+              protocol: TCP
+              containerPort: 8080
+          resources:
+            limits:
+              cpu: "2"
+              memory: "4Gi"
+            requests:
+              cpu: "0.1"
+              memory: "256Mi"
+          volumeMounts:
+            - name: datax-web-log
+              mountPath: /tmp/datax-admin.log
+      volumes:
+        - name: datax-web-log
+          hostPath:
+            path: /data/volume/datax-web/logs/datax-admin/datax-admin.log
+            type: FileOrCreate
